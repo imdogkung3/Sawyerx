@@ -234,13 +234,13 @@ return(function(Installer)
 
             pcall(sethiddenproperty, LocalPlayer, "SimulationRadius", math.huge)
 
-            if Distance or Settings['Enabled Bring'] then
+            if Distance then
                 Module.IsSuperBring = SuperBring and true or false
 
                 local Name = ToEnemy.Name
                 local BringPositionTag = SuperBring and "ALL_MOBS" or Name
                 local Target = CustomCFrame or ToEnemy.PrimaryPart.CFrame
-                local MaxDistance = Distance or Settings['Bring Distance']
+                local MaxDistance = Distance or 350
 
                 if not Cached.Bring[BringPositionTag] or (Target.Position - Cached.Bring[BringPositionTag].Position).Magnitude > 25 then
                     Cached.Bring[BringPositionTag] = Target
@@ -960,7 +960,7 @@ return(function(Installer)
 
                 local Target = Cached.Bring[Module.IsSuperBring and "ALL_MOBS" or EnemyName]
 
-                if Target and (Target.Position - RootPart.Position).Magnitude <= Settings["Bring Distance"] then
+                if Target and (Target.Position - RootPart.Position).Magnitude <= 350 then
                     if AlignPosition.Position ~= Target.Position then
                         AlignPosition.Position = Target.Position
                     end
