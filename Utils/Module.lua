@@ -469,7 +469,7 @@ AddModule("Plugins", function()
             Title = Info,
             Values = List,
             Multi = Multi or false,
-            Default = Settings[Flag] or List[1]
+            Default = Settings[Flag] or (Multi and {} or List[1])
         })
 
         Dropdown:OnChanged(function(Value)
