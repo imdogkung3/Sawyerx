@@ -463,7 +463,7 @@ AddModule("Plugins", function()
 
         return Slider
     end
-    
+                                
     function Plugins:Dropdown(Section, Info, List, Flag, Multi, Callback)
         local Dropdown = Section:AddDropdown(Flag, {
             Title = Info,
@@ -473,11 +473,27 @@ AddModule("Plugins", function()
         })
 
         Dropdown:OnChanged(function(Value)
-            Settings[Flag] = Value
-            Configurations:Save(Flag, Value)
-            _ENV.GLOBALS_SETTINGS[Flag] = Value
-            
-            if Callback then Callback(Value) end
+            if Multi then
+                local Values = {}
+
+                for i, v in next, Value do
+                    if v then
+                        table.insert(Values, i)
+                    end
+                end
+
+                Settings[Flag] = Values
+                _ENV.GLOBALS_SETTINGS[Flag] = Values
+                Configurations:Save(Flag, Values)
+
+                if Callback then Callback(Values) end
+            else
+                Settings[Flag] = Value
+                _ENV.GLOBALS_SETTINGS[Flag] = Value
+                Configurations:Save(Flag, Value)
+
+                if Callback then Callback(Value) end
+            end
         end)
 
         return Dropdown
