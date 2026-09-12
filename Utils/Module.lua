@@ -378,171 +378,178 @@ AddModule("Plugins", function()
     local Others = Utils.Others
     
     local Enabled, Options = Parallels.Options()
-    local Library = fetch('Utils/Library.lua')
+    local Fluent = fetch('Utils/Fluent.lua')
     
     function Plugins:Window(Info)
-        self['Base'] = Library:Window({
+        self.Base = Fluent:CreateWindow({
             Title = Info[1],
-            Footer = Info[2],
-            Logo = Info[3]
+            TabWidth = 120,
+            Size = UDim2.fromOffset(475, 300),
+            Acrylic = true,
+            Theme = "Dark",
+            MinimizeKey = Enum.KeyCode.LeftControl
         })
         
-        return self['Base']
+        return self.Base
     end
     
-    function Plugins:NewPage(Icon)
-        return self['Base']:NewPage(Icon)
+    function Plugins:NewPage(Title, Icon)
+        return self.Base:AddTab({
+            Title = Title,
+            Icon = "rbxassetid://" .. Icon
+        })
     end
     
     function Plugins:Section(Page, Info)
-        return Page:Section({
-            Header = Info[1],
-            Light = Info[2] or nil
-        })
+        return Page:AddSection(Info[1])
     end
     
     function Plugins:Button(Section, Info, Callback)
-        return Section:Button({
+        return Section:AddButton({
             Title = Info[1],
-            Desc = Info[2],
-            Type = Info[3] or "Primary",
-            Callback = Callback,
+            Description = Info[2],
+            Callback = Callback
         })
     end
     
     function Plugins:Toggle(Section, Info, Flag, Callback)
         local Thread = nil
 
-        Fallback[Flag] = Section:Toggle({
+        Fallback[Flag] = Section:AddToggle(Flag, {
             Title = Info[1],
-            Desc = Info[2],
-            Value = Settings[Flag],
-            Callback = function(value)
-                _ENV.GLOBALS_SETTINGS[Flag] = value
-                
-                Settings[Flag] = value
-                Configurations:Save(Flag, value)
-                Enabled[Flag] = value
-
-                if value then
-                    Thread = task.spawn(function()
-                        if Threads[Flag] then Threads[Flag](Settings[Flag]) end
-                    end)
-                else
-                    if Thread then task.cancel(Thread) end
-                end
-
-                if Callback then Callback(value) end
-            end
+            Description = Info[2],
+            Default = Settings[Flag] or false
         })
+
+        Fallback[Flag]:OnChanged(function(Value)
+            _ENV.GLOBALS_SETTINGS[Flag] = Value
+            
+            Settings[Flag] = Value
+            Configurations:Save(Flag, Value)
+            Enabled[Flag] = Value
+
+            if Value then
+                Thread = task.spawn(function()
+                    if Threads[Flag] then Threads[Flag](Settings[Flag]) end
+                end)
+            else
+                if Thread then task.cancel(Thread) end
+                Thread = nil
+            end
+
+            if Callback then Callback(Value) end
+        end)
 
         return Fallback[Flag]
     end
-
+    
     function Plugins:Slider(Section, Info, Value, Flag, Callback)
-        return Section:Slider({
+        local Slider = Section:AddSlider(Flag, {
             Title = Info[1],
-            Desc = Info[2],
+            Description = Info[2],
+            Default = Settings[Flag] or Value[1],
             Min = Value[1],
             Max = Value[2],
-            Rounding = Value[3],
-            Value = Settings[Flag],
-            Callback = function(value)
-                Settings[Flag] = value
-                Configurations:Save(Flag, value)
-                _ENV.GLOBALS_SETTINGS[Flag] = value
-                
-                if Callback then Callback(value) end
-            end
+            Rounding = Value[3]
         })
+
+        Slider:OnChanged(function(Value)
+            Settings[Flag] = Value
+            Configurations:Save(Flag, Value)
+            _ENV.GLOBALS_SETTINGS[Flag] = Value
+            
+            if Callback then Callback(Value) end
+        end)
+
+        return Slider
     end
     
     function Plugins:Dropdown(Section, Info, List, Flag, Callback)
-        return Section:Dropdown({
+        local Dropdown = Section:AddDropdown(Flag, {
             Title = Info,
-            Value = Settings[Flag] or "None",
-            List = List,
-            Callback = function(value)
-                Settings[Flag] = value
-                Configurations:Save(Flag, value)
-                _ENV.GLOBALS_SETTINGS[Flag] = value
-
-                if Callback then Callback(value) end
-            end
+            Values = List,
+            Multi = false,
+            Default = Settings[Flag] or List[1]
         })
+
+        Dropdown:OnChanged(function(Value)
+            Settings[Flag] = Value
+            Configurations:Save(Flag, Value)
+            _ENV.GLOBALS_SETTINGS[Flag] = Value
+            
+            if Callback then Callback(Value) end
+        end)
+
+        return Dropdown
     end
     
     function Plugins:Input(Section, Info, Flag, Callback)
-        return Section:Textbox({
+        local Input = Section:AddInput(Flag, {
             Title = Info[1],
-            Desc = Info[2],
-            Text = Settings[Flag] or "None",
-            Callback = function(value)
-                Settings[Flag] = value
-                Configurations:Save(Flag, value)
-                _ENV.GLOBALS_SETTINGS[Flag] = value
-
-                if Callback then Callback(value) end
-            end,
+            Description = Info[2],
+            Default = Settings[Flag] or "",
+            Placeholder = Info[1],
+            Numeric = false,
+            Finished = false
         })
+
+        Input:OnChanged(function(Value)
+            Settings[Flag] = Value
+            Configurations:Save(Flag, Value)
+            _ENV.GLOBALS_SETTINGS[Flag] = Value
+            
+            if Callback then Callback(Value) end
+        end)
+
+        return Input
     end
     
     function Plugins:TextLabel(Section, Info)
-        return Section:TextLabel({
+        return Section:AddParagraph({
             Title = Info[1],
-            Desc = Info[2],
-            Icon = Info[3] or nil,
-            Text = Info[4] or nil
+            Content = Info[2] or ""
         })
     end
     
     function Plugins:Managers()
-        local Managers = Plugins:NewPage(134261589888025) do
-            local _1 = Plugins:Section(Managers, { "Server", Color3.fromRGB(85, 255, 127) }) do
+        local Managers = Plugins:NewPage("Managers", 134261589888025) do
+            local Server = Plugins:Section(Managers, { "Server" }) do
                 Configurations:Default("JobId", JobId)
 
-                Plugins:Input(_1, { "JobId", "Put the job id." }, 'JobId')
+                Plugins:Input(Server, { "JobId", "Put the job id." }, "JobId")
 
-                Plugins:Button(_1, { "Join", "Connect to the server using the provided JobId." }, function()
-                    Others.Server:Join(Settings['JobId'])
+                Plugins:Button(Server, { "Join", "Connect to the server using the provided JobId." }, function()
+                    Others.Server:Join(Settings.JobId)
                 end)
 
-                Plugins:Button(_1, { "Change", "Teleport to a different public server instance." }, function()
+                Plugins:Button(Server, { "Change", "Teleport to a different public server instance." }, function()
                     Others.Server:Change()
                 end)
 
-                Plugins:Button(_1, { "Rejoin", "Reconnect to the current server instance." }, function()
+                Plugins:Button(Server, { "Rejoin", "Reconnect to the current server instance." }, function()
                     Others.Server:Rejoin()
                 end)
             end
             
-            local _2 = Plugins:Section(Managers, { "Optimization", Color3.fromRGB(85, 255, 127) }) do
-                Plugins:Toggle(_2, { "White Screen", "Disabled 3D Rendering to improve performance" }, "White Screen", function(value)
-                    Others.Optimize:Set3d(value)
+            local Optimization = Plugins:Section(Managers, { "Optimization" }) do
+                Plugins:Toggle(Optimization, { "White Screen", "Disabled 3D Rendering to improve performance" }, "White Screen", function(Value)
+                    Others.Optimize:Set3d(Value)
                 end)
 
-                Plugins:Button(_2, { "Fast Mode", "Set graphics quality to low" }, function()
+                Plugins:Button(Optimization, { "Fast Mode", "Set graphics quality to low" }, function()
                     Others.Optimize:Low()
                 end)
             end
             
-            local _3 = Plugins:Section(Managers, { "Configurations", Color3.fromRGB(85, 255, 127) }) do
-                local Mobile = if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then true else false
-                
-                Configurations:Default("Interface Scaler", Mobile and 1 or 1.45)
-                
-                Plugins:Slider(_3, { "Interface Scaler", "Set interface scale." }, { 1, 2, 2 }, "Interface Scaler", function(value)
-                    Plugins.Base:SetScale(value)
-                end)
-                
-                Plugins:Button(_3, { "Remove Worksapce", "Reset save setting file to default value." }, function()
+            local Interface = Plugins:Section(Managers, { "Interface" }) do
+                Plugins:Button(Interface, { "Remove Worksapce", "Reset save setting file to default value." }, function()
                     local Files = Configurations.FullPaths
 
                     if Files and isfile(Files) then
-                        pcall(delfile, Configurations.FullPaths)
-                        warn('Remove Success')
+                        pcall(delfile, Files)
+                        warn("Remove Success")
                     else
-                        warn('File not found')
+                        warn("File not found")
                     end
                 end)
             end
