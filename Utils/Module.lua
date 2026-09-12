@@ -385,7 +385,7 @@ AddModule("Plugins", function()
             Title = Info[1],
             TabWidth = 120,
             Size = UDim2.fromOffset(475, 300),
-            Acrylic = true,
+            Acrylic = false,
             Theme = "Dark",
             MinimizeKey = Enum.KeyCode.LeftControl
         })
