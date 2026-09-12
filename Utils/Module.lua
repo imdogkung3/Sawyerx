@@ -464,7 +464,7 @@ AddModule("Plugins", function()
         return Slider
     end
     
-    function Plugins:Dropdown(Section, Info, List, Flag, Callback, Multi)
+    function Plugins:Dropdown(Section, Info, List, Flag, Multi, Callback)
         local Dropdown = Section:AddDropdown(Flag, {
             Title = Info,
             Values = List,
