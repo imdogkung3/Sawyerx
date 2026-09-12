@@ -477,7 +477,7 @@ AddModule("Plugins", function()
                 local Values = {}
 
                 for i, v in next, Value do
-                    if v then
+                    if v and table.find(List, i) then
                         table.insert(Values, i)
                     end
                 end
