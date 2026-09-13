@@ -234,7 +234,7 @@ return(function(Installer)
 
             pcall(sethiddenproperty, LocalPlayer, "SimulationRadius", math.huge)
 
-            if Distance then
+            if Distance or true then
                 Module.IsSuperBring = SuperBring and true or false
 
                 local Name = ToEnemy.Name
