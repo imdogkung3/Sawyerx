@@ -129,78 +129,6 @@ AddModule("Configurations", function()
     return Configurations
 end)
 
-AddModule("Others", function()
-    local Others = {}
-
-    Others.Server = (function()
-        local Server = {}
-
-        function Server:Reversed(cursor)
-            local url = `https://games.roblox.com/v1/games/{PlaceId}/servers/Public?sortOrder=Asc&limit=100`
-
-            if cursor then
-                url ..= `&cursor={cursor}`
-            end
-
-            return HttpService:JSONDecode(game:HttpGet(url))
-        end
-
-        function Server:Rejoin()
-            if #Players:GetPlayers() <= 1 then
-                LocalPlayer:Kick("\nRejoining");wait()
-
-                return TeleportService:Teleport(PlaceId, LocalPlayer)
-            end
-
-            return TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
-        end
-
-        function Server:Change()
-            local Server, Next
-
-            repeat
-                local Servers = Server:Reversed(Next)
-
-                Server = Servers and Servers.data and Servers.data[1]
-                Next = Servers and Servers.nextPageCursor
-            until Server
-
-            if not Server or not Server.id then return end
-            return TeleportService:TeleportToPlaceInstance(PlaceId, Server.id, LocalPlayer)
-        end
-
-        function Server:Join(id)
-            return TeleportService:TeleportToPlaceInstance(PlaceId, id, LocalPlayer)
-        end
-
-        return Server
-    end)()
-
-    Others.Optimize = (function()
-        local Optimize = {}
-
-        function Optimize:Set3d(value)
-            RunService:Set3dRenderingEnabled(if value then false else true)
-        end
-
-        function Optimize:Low()
-            local Terrain = workspace:FindFirstChildOfClass('Terrain') do
-                Terrain.WaterWaveSize = 0
-                Terrain.WaterWaveSpeed = 0
-                Terrain.WaterReflectance = 0
-                Terrain.WaterTransparency = 0
-                game.Lighting.GlobalShadows = false
-                game.Lighting.FogEnd = 9e9
-                settings().Rendering.QualityLevel = 1
-            end
-        end
-
-        return Optimize
-    end)()
-
-    return Others
-end)
-
 AddModule("Parallels", function()
     local Parallels = {}
 
@@ -381,6 +309,7 @@ AddModule("Plugins", function()
     function Plugins:Window(Info)
         self.Base = Fluent:CreateWindow({
             Title = Info[1],
+            SubTitle = Info[2],         
             TabWidth = 120,
             Size = UDim2.fromOffset(475, 300),
             Acrylic = false,
