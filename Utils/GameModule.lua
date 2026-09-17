@@ -2021,8 +2021,6 @@ return(function(Installer)
             CurrentTool = nil
             IsReloading = false
 
-            warn("Spawn", Character, Humanoid, HumanoidRootPart, Backpack)
-
             BindBackpack()
         end)
 
