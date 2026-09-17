@@ -19,8 +19,6 @@ local function fetch(file)
         Owner, Repository, file
     )
 
-    warn("Fetch : ", file)
-
     return loadstring(game:HttpGet(URL))()
 end
 
@@ -525,53 +523,6 @@ AddModule("Plugins", function()
             Title = Info[1],
             Content = Info[2] or ""
         })
-    end
-    
-    function Plugins:Managers()
-        local Managers = Plugins:NewPage("Managers", 134261589888025) do
-            local Server = Plugins:Section(Managers, { "Server" }) do
-                Configurations:Default("JobId", JobId)
-
-                Plugins:Input(Server, { "JobId", "Put the job id." }, "JobId")
-
-                Plugins:Button(Server, { "Join", "Connect to the server using the provided JobId." }, function()
-                    Others.Server:Join(Settings.JobId)
-                end)
-
-                Plugins:Button(Server, { "Change", "Teleport to a different public server instance." }, function()
-                    Others.Server:Change()
-                end)
-
-                Plugins:Button(Server, { "Rejoin", "Reconnect to the current server instance." }, function()
-                    Others.Server:Rejoin()
-                end)
-            end
-            
-            local Optimization = Plugins:Section(Managers, { "Optimization" }) do
-                Plugins:Toggle(Optimization, { "White Screen", "Disabled 3D Rendering to improve performance" }, "White Screen", function(Value)
-                    Others.Optimize:Set3d(Value)
-                end)
-
-                Plugins:Button(Optimization, { "Fast Mode", "Set graphics quality to low" }, function()
-                    Others.Optimize:Low()
-                end)
-            end
-            
-            local Interface = Plugins:Section(Managers, { "Interface" }) do
-                Plugins:Button(Interface, { "Remove Worksapce", "Reset save setting file to default value." }, function()
-                    local Files = Configurations.FullPaths
-
-                    if Files and isfile(Files) then
-                        pcall(delfile, Files)
-                        warn("Remove Success")
-                    else
-                        warn("File not found")
-                    end
-                end)
-            end
-        end
-        
-        return Managers
     end
     
     return Plugins
