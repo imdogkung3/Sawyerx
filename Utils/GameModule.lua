@@ -416,7 +416,7 @@ return(function(Installer)
 
     AddModule("Combat", function()
         local Combat = {
-            RANGE = 50,
+            RANGE = 1000,
             HIT_FUNCTION = nil
         }
 
