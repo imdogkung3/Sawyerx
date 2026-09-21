@@ -36,7 +36,7 @@ local HumanoidsCache do
                 end
                 COUNT_NEWINDEX = 0
             end
-            
+
             COUNT_NEWINDEX += 1
             return rawset(self, index, value)
         end
@@ -50,7 +50,7 @@ local HumanoidsCache do
             return Humanoid
         end
     end
-    
+
     HumanoidsCache = setmetatable({}, Metatable)
 end
 
@@ -83,7 +83,7 @@ local function CheckPlayerAlly(Target)
     if Target.Parent == Characters then
         Target = Players:GetPlayerFromCharacter(Target)
     end
-    
+
     if not Target then return false end
 
     if tostring(Target.Team) == "Marines" and Target.Team == Player.Team then
@@ -155,7 +155,7 @@ local GunClient = (function()
         for index = 1, #CurrentBladeHits do
             local Hit = CurrentBladeHits[index]
             local Dist = (MyRootPartPosition - Hit[2].Position).Magnitude
-            
+
             if Dist < MinDist then
                 MinDist = Dist
                 Hitbox, Target = Hit[2], Hit[1]
@@ -226,13 +226,13 @@ local GunClient = (function()
     end
 
     function GunClient:GetValidator2()
-        local v1 = getupvalue(SHOOT_FUNCTION, 15)
-        local v2 = getupvalue(SHOOT_FUNCTION, 13)
-        local v3 = getupvalue(SHOOT_FUNCTION, 16)
-        local v4 = getupvalue(SHOOT_FUNCTION, 17)
-        local v5 = getupvalue(SHOOT_FUNCTION, 14)
-        local v6 = getupvalue(SHOOT_FUNCTION, 12)
-        local v7 = getupvalue(SHOOT_FUNCTION, 18)
+        local v1 = getupvalue(SHOOT_FUNCTION, 16)
+        local v2 = getupvalue(SHOOT_FUNCTION, 14)
+        local v3 = getupvalue(SHOOT_FUNCTION, 17)
+        local v4 = getupvalue(SHOOT_FUNCTION, 18)
+        local v5 = getupvalue(SHOOT_FUNCTION, 15)
+        local v6 = getupvalue(SHOOT_FUNCTION, 13)
+        local v7 = getupvalue(SHOOT_FUNCTION, 19)
 
         local v8 = v6 * v2
         local v9 = (v5 * v2 + v6 * v1) % v3
@@ -242,16 +242,16 @@ local GunClient = (function()
         v6 = v9 - v5 * v3
         v7 = v7 + 1
 
-        setupvalue(SHOOT_FUNCTION, 15, v1)
-        setupvalue(SHOOT_FUNCTION, 13, v2)
-        setupvalue(SHOOT_FUNCTION, 16, v3)
-        setupvalue(SHOOT_FUNCTION, 17, v4)
-        setupvalue(SHOOT_FUNCTION, 14, v5)
-        setupvalue(SHOOT_FUNCTION, 12, v6)
-        setupvalue(SHOOT_FUNCTION, 18, v7)
+        setupvalue(SHOOT_FUNCTION, 16, v1)
+        setupvalue(SHOOT_FUNCTION, 14, v2)
+        setupvalue(SHOOT_FUNCTION, 17, v3)
+        setupvalue(SHOOT_FUNCTION, 18, v4)
+        setupvalue(SHOOT_FUNCTION, 15, v5)
+        setupvalue(SHOOT_FUNCTION, 13, v6)
+        setupvalue(SHOOT_FUNCTION, 19, v7)
 
         local r1, r2 = math.floor(v9 / v4 * 16777215), v7
-        
+
         return r1, r2
     end
 
@@ -351,17 +351,17 @@ local GunClient = (function()
             end
         end
     end
-    
+
     function GunClient:FireTarget(Equipped, Character)
         if not Character then return end
-        
+
         local Cooldown = Equipped:FindFirstChild("Cooldown")
         local Current = Cooldown and Cooldown.Value or 0.3
 
         if (tick() - self.Debounce) >= Current then
             self.Equipped = Equipped
             self.Debounce = tick()
-            
+
             MyRootPartPosition = Character:GetPivot().Position
 
             if SUCCESS_SHOOT and SHOOT_FUNCTION then
