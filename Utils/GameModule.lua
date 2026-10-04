@@ -1614,7 +1614,7 @@ return(function(Installer)
 
             local Tween = TweenService:Create(
                 Seat,
-                TweenInfo.new(Distance / 150, Enum.EasingStyle.Linear),
+                TweenInfo.new(Distance / 180, Enum.EasingStyle.Linear),
                 { CFrame = Target }
             )
 
