@@ -186,7 +186,7 @@ return(function(Installer)
             return Position and ((typeof(Position) == 'CFrame' and LocalPlayer:DistanceFromCharacter(Position.Position)) or LocalPlayer:DistanceFromCharacter(Position))
         end
 
-        function Module:GetWeaponName(Type)
+        function Module:TypeTool(Type)
             if not IsAlive() then return end
 
             for _, v in Backpack:GetChildren() do
