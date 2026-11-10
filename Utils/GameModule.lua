@@ -1240,11 +1240,15 @@ return(function(Installer)
         end
 
         function Cache:HaveItem(Name)
-            if not IsAlive() then return end
-
             if self.Unlocked[Name] then
                 return true
             end
+
+            return false
+        end
+
+        function Cache:HaveTool(Name)
+            if not IsAlive() then return end
 
             return Character:FindFirstChild(Name) or Backpack:FindFirstChild(Name)
         end
