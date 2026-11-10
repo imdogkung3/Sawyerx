@@ -2608,7 +2608,6 @@ Nodes.Application = function(Folder, Args)
 
                 Nodes.New("UIPadding", {
                     Parent = Left,
-                    PaddingLeft = UDim.new(0, 22),
                 })
             end
 
@@ -3369,49 +3368,6 @@ Nodes.Application = function(Folder, Args)
                 })
             end
 
-            local Text = Nodes.New("Frame", {
-                AutomaticSize = AutomaticSize.XY,
-                BackgroundTransparency = 1,
-                Name = "Text",
-                Parent = Left,
-                Size = UDim2.new(0, 0, 0, 0),
-            }) do
-                Nodes.New("UIListLayout", {
-                    Padding = UDim.new(0, 2),
-                    Parent = Text,
-                    SortOrder = SortOrder.LayoutOrder,
-                    VerticalAlignment = VerticalAlignment.Center,
-                })
-            end
-
-            local Title = Nodes.New("TextLabel", {
-                AutomaticSize = AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                Name = "Title",
-                Parent = Text,
-                Size = UDim2.new(0, 100, 0, 0),
-                TextTruncate = TextTruncate.AtEnd,
-                FontFace = Nodes.FontMedium,
-                Text = "Loading",
-                TextColor3 = Color3.fromRGB(255, 255, 255),
-                TextSize = 14,
-                TextXAlignment = TextXAlignment.Left,
-            })
-
-            local Desc = Nodes.New("TextLabel", {
-                AutomaticSize = AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                Name = "Desc",
-                Parent = Text,
-                Size = UDim2.new(0, 120, 0, 0),
-                TextTruncate = TextTruncate.AtEnd,
-                FontFace = Nodes.FontMedium,
-                Text = "Waiting for loading tabs.",
-                TextColor3 = Color3.fromRGB(255, 255, 255),
-                TextSize = 12,
-                TextTransparency = 0.5,
-                TextXAlignment = TextXAlignment.Left,
-            })
 
             function Application:GetOrderByIndex()
                 for _, TabModule in self.Tabs do
@@ -3449,22 +3405,6 @@ Nodes.Application = function(Folder, Args)
                         }):Play() 
                     end
 
-                    Title.Text = Info[1]
-                    Desc.Text = Info[2]
-
-                    if Nodes.IsThaiCharacter(Info[2]) then
-                        Text.UIListLayout.Padding = UDim.new(0, 0)
-                        Desc.TextSize = 14
-                    else
-                        Text.UIListLayout.Padding = UDim.new(0, 2)
-                        Desc.TextSize = 12
-                    end
-
-                    if Nodes.IsThaiCharacter(Info[1]) then
-                        Title.TextSize = 16
-                    else
-                        Title.TextSize = 15
-                    end
                 end
             end)
         end)
