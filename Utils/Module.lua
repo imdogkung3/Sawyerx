@@ -304,154 +304,140 @@ AddModule("Plugins", function()
     local Others = Utils.Others
     
     local Enabled, Options = Parallels.Options()
-    local Fluent = fetch('Utils/Fluent.lua')
-    
+    local Library = fetch("Utils/Library.lua")
+
     function Plugins:Window(Info)
-        self.Base = Fluent:CreateWindow({
+        self.Base = Library.Application("MyHub", {
             Title = Info[1],
-            SubTitle = Info[2],         
-            TabWidth = 120,
-            Size = UDim2.fromOffset(475, 300),
-            Acrylic = false,
-            Theme = "Dark",
-            MinimizeKey = Enum.KeyCode.LeftControl
+            Footer = Info[2],
+            Logo = Info[3]
         })
-        
+
         return self.Base
     end
-    
-    function Plugins:NewPage(Title, Icon)
-        return self.Base:AddTab({
-            Title = Title,
-            Icon = "rbxassetid://" .. Icon
-        })
-    end
-    
-    function Plugins:Section(Page, Info)
-        return Page:AddSection(Info[1])
-    end
-    
-    function Plugins:Button(Section, Info, Callback)
-        return Section:AddButton({
+
+    function Plugins:NewPage(Info, Icon)
+        return self.Base:MakeTab({
             Title = Info[1],
             Description = Info[2],
+            Icon = Icon
+        })
+    end
+
+    function Plugins:Section(Page, Info)
+        return Page:Section(Info[1])
+    end
+
+    function Plugins:Button(Section, Info, Callback)
+        return Section:Button({
+            Title = Info[1],
+            Description = Info[2],
+            Type = Info[3] or "Primary",
             Callback = Callback
         })
     end
-    
+
     function Plugins:Toggle(Section, Info, Flag, Callback)
         local Thread = nil
 
-        Fallback[Flag] = Section:AddToggle(Flag, {
+        Fallback[Flag] = Section:Toggle({
             Title = Info[1],
             Description = Info[2],
-            Default = Settings[Flag] or false
-        })
+            Value = Settings[Flag],
+            Callback = function(_, Value)
+                _ENV.GLOBALS_SETTINGS[Flag] = Value
 
-        Fallback[Flag]:OnChanged(function(Value)
-            _ENV.GLOBALS_SETTINGS[Flag] = Value
-            
-            Settings[Flag] = Value
-            Configurations:Save(Flag, Value)
-            Enabled[Flag] = Value
+                Settings[Flag] = Value
+                Configurations:Save(Flag, Value)
+                Enabled[Flag] = Value
 
-            if Value then
-                Thread = task.spawn(function()
-                    if Threads[Flag] then Threads[Flag](Settings[Flag]) end
-                end)
-            else
-                if Thread then task.cancel(Thread) end
-                Thread = nil
-            end
-
-            if Callback then Callback(Value) end
-        end)
-
-        return Fallback[Flag]
-    end
-    
-    function Plugins:Slider(Section, Info, Value, Flag, Callback)
-        local Slider = Section:AddSlider(Flag, {
-            Title = Info[1],
-            Description = Info[2],
-            Default = Settings[Flag] or Value[1],
-            Min = Value[1],
-            Max = Value[2],
-            Rounding = Value[3]
-        })
-
-        Slider:OnChanged(function(Value)
-            Settings[Flag] = Value
-            Configurations:Save(Flag, Value)
-            _ENV.GLOBALS_SETTINGS[Flag] = Value
-            
-            if Callback then Callback(Value) end
-        end)
-
-        return Slider
-    end
-                                
-    function Plugins:Dropdown(Section, Info, List, Flag, Multi, Callback)
-        local Dropdown = Section:AddDropdown(Flag, {
-            Title = Info,
-            Values = List,
-            Multi = Multi or false,
-            Default = Settings[Flag] or (Multi and {} or List[1])
-        })
-
-        Dropdown:OnChanged(function(Value)
-            if Multi then
-                local Values = {}
-
-                for i, v in next, Value do
-                    if v and table.find(List, i) then
-                        table.insert(Values, i)
+                if Value then
+                    Thread = task.spawn(function()
+                        if Threads[Flag] then
+                            Threads[Flag](Settings[Flag])
+                        end
+                    end)
+                else
+                    if Thread then
+                        task.cancel(Thread)
                     end
                 end
 
-                Settings[Flag] = Values
-                _ENV.GLOBALS_SETTINGS[Flag] = Values
-                Configurations:Save(Flag, Values)
-
-                if Callback then Callback(Values) end
-            else
-                Settings[Flag] = Value
-                _ENV.GLOBALS_SETTINGS[Flag] = Value
-                Configurations:Save(Flag, Value)
-
-                if Callback then Callback(Value) end
+                if Callback then
+                    Callback(Value)
+                end
             end
-        end)
+        })
 
-        return Dropdown
+        return Fallback[Flag]
     end
-    
-    function Plugins:Input(Section, Info, Flag, Callback)
-        local Input = Section:AddInput(Flag, {
+
+    function Plugins:Slider(Section, Info, Value, Flag, Callback)
+        return Section:Slider({
             Title = Info[1],
             Description = Info[2],
-            Default = Settings[Flag] or "",
-            Placeholder = Info[1],
-            Numeric = false,
-            Finished = false
+            Min = Value[1],
+            Max = Value[2],
+            Rounding = Value[3],
+            Value = Settings[Flag],
+            Callback = function(_, NewValue)
+                Settings[Flag] = NewValue
+                Configurations:Save(Flag, NewValue)
+                _ENV.GLOBALS_SETTINGS[Flag] = NewValue
+
+                if Callback then
+                    Callback(NewValue)
+                end
+            end
         })
-
-        Input:OnChanged(function(Value)
-            Settings[Flag] = Value
-            Configurations:Save(Flag, Value)
-            _ENV.GLOBALS_SETTINGS[Flag] = Value
-            
-            if Callback then Callback(Value) end
-        end)
-
-        return Input
     end
-    
-    function Plugins:TextLabel(Section, Info)
-        return Section:AddParagraph({
-            Title = Info[1],
-            Content = Info[2] or ""
+
+    function Plugins:Dropdown(Section, Info, List, Flag, Callback)
+        return Section:Dropdown({
+            Title = Info,
+            List = List,
+            Value = Settings[Flag] or "None",
+            Callback = function(_, Value)
+                Settings[Flag] = Value
+                Configurations:Save(Flag, Value)
+                _ENV.GLOBALS_SETTINGS[Flag] = Value
+
+                if Callback then
+                    Callback(Value)
+                end
+            end
         })
+    end
+
+    function Plugins:Input(Section, Info, Flag, Callback)
+        return Section:Textbox({
+            Title = Info[1],
+            Description = Info[2],
+            Value = Settings[Flag] or "None",
+            TypeOfValue = "string",
+            Callback = function(_, Value)
+                Settings[Flag] = Value
+                Configurations:Save(Flag, Value)
+                _ENV.GLOBALS_SETTINGS[Flag] = Value
+
+                if Callback then
+                    Callback(Value)
+                end
+            end
+        })
+    end
+
+    function Plugins:TextLabel(Section, Info)
+        local Label = Section:Paragraph({
+            Title = Info[1],
+            Description = Info[2]
+        })
+
+        if Info[4] then
+            Label:Typography(Info[4])
+        end
+
+        return Label
     end
     
     return Plugins
