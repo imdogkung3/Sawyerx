@@ -2608,7 +2608,7 @@ Nodes.Application = function(Folder, Args)
 
                 Nodes.New("UIPadding", {
                     Parent = Left,
-                    PaddingLeft = UDim.new(0, 20),
+                    PaddingLeft = UDim.new(0, 22),
                 })
             end
 
