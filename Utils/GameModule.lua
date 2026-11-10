@@ -186,8 +186,20 @@ return(function(Installer)
             return Position and ((typeof(Position) == 'CFrame' and LocalPlayer:DistanceFromCharacter(Position.Position)) or LocalPlayer:DistanceFromCharacter(Position))
         end
 
-        function Module:IsPortal()
-            return GetSea() ~= 3 or Module:ComF("GetUnlockables").DefeatedIndraTrueForm
+        function Module:GetWeaponName(Type)
+            if not IsAlive() then return end
+
+            for _, v in Backpack:GetChildren() do
+                if v:IsA("Tool") and v.ToolTip == Type then
+                    return v.Name
+                end
+            end
+
+            for _, v in Character:GetChildren() do
+                if v:IsA("Tool") and v.ToolTip == Type then
+                    return v.Name
+                end
+            end
         end
 
         function Module:Equip(Name, Tooltip)
