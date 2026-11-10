@@ -3943,127 +3943,131 @@ Nodes.Application = function(Folder, Args)
 
             Signal:Connect(function(Type, Info)
                 if Type == "OptionSearch" and Framework.Pages then
-                    local Found = false
 
-                    local Query = string.lower(Info)
-                    local CurrentPage = PageLayout.CurrentPage
-                    local SectionVisible = {}
+                    -- Debounce
+                    if SearchThread then
+                        task.cancel(SearchThread)
+                    end
 
-                    for _, Data in Application.Searching do
-                        if not SectionVisible[Data.Section] then
-                            SectionVisible[Data.Section] = {
-                                Original = Data.Original,
-                                Match = false,
-                                Rows = {}
-                            }
+                    SearchThread = task.delay(0.12, function()
+
+                        local Found = false
+                        local Query = string.lower(Info)
+                        local CurrentPage = PageLayout.CurrentPage
+
+                        -- Skip ถ้า query ไม่เปลี่ยน
+                        if Query == LastSearchQuery then
+                            return
                         end
+                        LastSearchQuery = Query
 
-                        if Query == "" then
-                            Data.Row.Visible = true
+                        local SectionVisible = {}
 
-                            Data.Title.RichText = false
-                            Data.SectionTitle.RichText = false
-
-                            Data.Title.Text = Data.OriginalTitle
-                            Data.SectionTitle.Text = Data.OriginalSectionTitle
-
-                            if Data.Desc and not Data.Row:GetAttribute('Dropdown') then
-                                Data.Desc.RichText = false
-                                Data.Desc.Text = Data.OriginalDesc
+                        for _, Data in Application.Searching do
+                            if not SectionVisible[Data.Section] then
+                                SectionVisible[Data.Section] = {
+                                    Original = Data.Original,
+                                    Match = false,
+                                    Rows = {}
+                                }
                             end
 
-                            table.insert(
-                                SectionVisible[Data.Section].Rows,
-                                Data.RowModule
-                            )
+                            if Query == "" then
+                                if Data.Row.Visible ~= true then Data.Row.Visible = true end
 
-                            SectionVisible[Data.Section].Match = true
-                        else
-                            local SectionTitle = string.lower(
-                                Data.Section.Header.Left.Title.Text
-                            )
-
-                            local TitleText = string.lower(
-                                Data.OriginalTitle
-                            )
-
-                            local DescText = Data.OriginalDesc
-                                and string.lower(Data.OriginalDesc)
-                                or ""
-
-                            local Match =
-                                string.find(TitleText, Query, 1, true)
-                                or string.find(DescText, Query, 1, true)
-                                or string.find(SectionTitle, Query, 1, true)
-
-                            Data.Row.Visible = Match ~= nil
-
-                            if Match then
-                                Found = true
-
-                                Data.Title.RichText = true
-                                Data.Title.Text = Nodes.Highlight(
-                                    Data.OriginalTitle,
-                                    Info
-                                )
-
-                                if Data.Desc and not Data.Row:GetAttribute('Dropdown') then
-                                    Data.Desc.RichText = true
-                                    Data.Desc.Text = Nodes.Highlight(
-                                        Data.OriginalDesc,
-                                        Info
-                                    )
+                                if Data.Title.RichText then Data.Title.RichText = false end
+                                if Data.Title.Text ~= Data.OriginalTitle then
+                                    Data.Title.Text = Data.OriginalTitle
                                 end
 
-                                Data.SectionTitle.RichText = true
-                                Data.SectionTitle.Text = Nodes.Highlight(
-                                    Data.OriginalSectionTitle,
-                                    Info
-                                )
+                                if Data.SectionTitle.RichText then Data.SectionTitle.RichText = false end
+                                if Data.SectionTitle.Text ~= Data.OriginalSectionTitle then
+                                    Data.SectionTitle.Text = Data.OriginalSectionTitle
+                                end
 
+                                if Data.Desc and not Data.Row:GetAttribute('Dropdown') then
+                                    if Data.Desc.RichText then Data.Desc.RichText = false end
+                                    if Data.Desc.Text ~= Data.OriginalDesc then
+                                        Data.Desc.Text = Data.OriginalDesc
+                                    end
+                                end
+
+                                table.insert(SectionVisible[Data.Section].Rows, Data.RowModule)
                                 SectionVisible[Data.Section].Match = true
-
-                                table.insert(
-                                    SectionVisible[Data.Section].Rows,
-                                    Data.RowModule
-                                )
                             else
-                                Data.Title.RichText = false
-                                Data.Title.Text = Data.OriginalTitle
+                                local SectionTitleLow = Data.OriginalSectionTitleLower
+                                    or string.lower(Data.Section.Header.Left.Title.Text)
 
-                                if Data.Desc and not Data.Row:GetAttribute('Dropdown') then
-                                    Data.Desc.RichText = false
-                                    Data.Desc.Text = Data.OriginalDesc
+                                local TitleLow = Data.OriginalTitleLower
+                                    or string.lower(Data.OriginalTitle)
+
+                                local DescLow = Data.OriginalDescLower
+                                    or (Data.OriginalDesc and string.lower(Data.OriginalDesc) or "")
+
+                                local Match =
+                                    string.find(TitleLow, Query, 1, true)
+                                    or string.find(DescLow, Query, 1, true)
+                                    or string.find(SectionTitleLow, Query, 1, true)
+
+                                local IsMatch = Match ~= nil
+
+                                if Data.Row.Visible ~= IsMatch then
+                                    Data.Row.Visible = IsMatch
                                 end
 
-                                Data.SectionTitle.RichText = false
-                                Data.SectionTitle.Text = Data.OriginalSectionTitle
+                                if IsMatch then
+                                    Found = true
+
+                                    if not Data.Title.RichText then Data.Title.RichText = true end
+                                    Data.Title.Text = Nodes.Highlight(Data.OriginalTitle, Info)
+
+                                    if not Data.SectionTitle.RichText then Data.SectionTitle.RichText = true end
+                                    Data.SectionTitle.Text = Nodes.Highlight(Data.OriginalSectionTitle, Info)
+
+                                    if Data.Desc and not Data.Row:GetAttribute('Dropdown') then
+                                        if not Data.Desc.RichText then Data.Desc.RichText = true end
+                                        Data.Desc.Text = Nodes.Highlight(Data.OriginalDesc, Info)
+                                    end
+
+                                    SectionVisible[Data.Section].Match = true
+                                    table.insert(SectionVisible[Data.Section].Rows, Data.RowModule)
+                                else
+                                    if Data.Title.RichText then Data.Title.RichText = false end
+                                    if Data.Title.Text ~= Data.OriginalTitle then
+                                        Data.Title.Text = Data.OriginalTitle
+                                    end
+
+                                    if Data.SectionTitle.RichText then Data.SectionTitle.RichText = false end
+                                    if Data.SectionTitle.Text ~= Data.OriginalSectionTitle then
+                                        Data.SectionTitle.Text = Data.OriginalSectionTitle
+                                    end
+
+                                    if Data.Desc and not Data.Row:GetAttribute('Dropdown') then
+                                        if Data.Desc.RichText then Data.Desc.RichText = false end
+                                        if Data.Desc.Text ~= Data.OriginalDesc then
+                                            Data.Desc.Text = Data.OriginalDesc
+                                        end
+                                    end
+                                end
                             end
                         end
-                    end
 
-                    for Section, Data in SectionVisible do
-                        Section.Parent = (Query == "" or Data.Match)
-                            and Data.Original
-                            or CurrentPage
+                        for Section, Data in SectionVisible do
+                            local ShouldShow = Query == "" or Data.Match
+                            local TargetParent = ShouldShow and CurrentPage or Data.Original
 
-                        Section.Visible = true
+                            if Section.Parent ~= TargetParent then
+                                Section.Parent = TargetParent
+                            end
+                            if Section.Visible ~= ShouldShow then
+                                Section.Visible = ShouldShow
+                            end
 
-                        if Query ~= "" then
-                            Section.Parent = Data.Match
-                                and CurrentPage
-                                or Data.Original
-
-                            Section.Visible = Data.Match
+                            Nodes.UpdateLine(Data.Rows)
                         end
 
-                        Nodes.UpdateLine(Data.Rows)
-                    end
-
-                    Signal:Fire(
-                        "SetResultPage",
-                        Query ~= "" and not Found
-                    )
+                        Signal:Fire("SetResultPage", Query ~= "" and not Found)
+                    end)
 
                     return nil
                 end
@@ -4416,7 +4420,7 @@ Nodes.Application = function(Folder, Args)
 
                 local State = IsSelected and "Selected" or "UnSelect"
 
-                Nodes.ScrollTo(Tabscrolling, SelectTab)
+                --Nodes.ScrollTo(Tabscrolling, SelectTab)
 
                 Nodes.MultiTweens(
                     SelectTab,
