@@ -135,20 +135,6 @@ return(function(Installer)
         return false
     end
 
-    function Module:MatchString(v1, v2)
-        local String = tostring(v1)
-
-        if type(v2) == "string" then
-            return String:find(v2, 1, true) ~= nil
-        end
-
-        for _, v in v2 do
-            if String:find(v, 1, true) ~= nil then
-                return true
-            end
-        end
-    end
-
     local function IsAlive()
         if not Character then return end
 
@@ -160,7 +146,7 @@ return(function(Installer)
 
         if not Backpack then return end
 
-        return (Humanoid and Humanoid.Health > 0) or HumanoidRootPart ~= nil
+        return Humanoid.Health > 0
     end
 
     local function IsValidSea(sea)
@@ -281,6 +267,20 @@ return(function(Installer)
                 end
 
                 ToEnemy.PrimaryPart.CFrame = Cached.Bring[ToEnemy]
+            end
+        end
+                
+        function Module:MatchString(v1, v2)
+            local String = tostring(v1)
+
+            if type(v2) == "string" then
+                return String:find(v2, 1, true) ~= nil
+            end
+
+            for _, v in v2 do
+                if String:find(v, 1, true) ~= nil then
+                    return true
+                end
             end
         end
     end
