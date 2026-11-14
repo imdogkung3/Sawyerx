@@ -92,6 +92,8 @@ return(function(Installer)
 
     local SubmarineWorkerSpeak: RemoteFunction = Net:WaitForChild('RF/SubmarineWorkerSpeak')
 
+    local EnchantInvoke: RemoteFunction = Net:WaitForChild('RF/EnchantInvoke')
+
     local empty = (function(...) return (...) end)
 
     local fireproximityprompt = fireproximityprompt or empty
